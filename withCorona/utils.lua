@@ -1,5 +1,6 @@
 local json = require("json")
 local size = 120
+local scale = 0.8
 local result = {}
 local utils = {}
 local xSize = 15
@@ -76,8 +77,10 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 		return nil
 	end
 
-	local h = size * math.sqrt(3) / 2
-	local centerX = 3 * size / 2 * (x - 1) + size
+	local scaleSize = scale * size
+
+	local h = scaleSize * math.sqrt(3) / 2
+	local centerX = 3 * scaleSize / 2 * (x - 1) + scaleSize
 	local centerY =  h * ( 2 * (y - 1) + (x - 1) % 2) + h
 	local strokeColor = {0,0,0}
 	local strokeWidth = 20
@@ -90,7 +93,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x - 1, y - lag, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX - size, centerY, centerX - size/2, centerY - h)
+			local line = display.newLine(selectedCounty,centerX - scaleSize, centerY, centerX - scaleSize/2, centerY - h)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -102,7 +105,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x, y - 1, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX - size/2, centerY - h, centerX + size/2, centerY - h)
+			local line = display.newLine(selectedCounty,centerX - scaleSize/2, centerY - h, centerX + scaleSize/2, centerY - h)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -113,7 +116,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x + 1, y - lag, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX + size/2, centerY - h, centerX + size, centerY)
+			local line = display.newLine(selectedCounty,centerX + scaleSize/2, centerY - h, centerX + scaleSize, centerY)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -124,7 +127,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x + 1, y+1- lag, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX + size, centerY, centerX + size/2, centerY + h)
+			local line = display.newLine(selectedCounty,centerX + scaleSize, centerY, centerX + scaleSize/2, centerY + h)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -135,7 +138,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x, y + 1, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX + size/2, centerY + h,centerX - size/2, centerY + h)
+			local line = display.newLine(selectedCounty,centerX + scaleSize/2, centerY + h,centerX - scaleSize/2, centerY + h)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -146,7 +149,7 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty)
 			done[coordinateToString(x, y)] = true
 			highlightFrontier(x-1, y+1- lag, colorName, done, selectedCounty)
 		else
-			local line = display.newLine(selectedCounty,centerX - size/2, centerY + h, centerX - size, centerY)
+			local line = display.newLine(selectedCounty,centerX - scaleSize/2, centerY + h, centerX - scaleSize, centerY)
 			line.strokeWidth = strokeWidth
 			line:setStrokeColor(unpack(strokeColor))
 		end
@@ -184,9 +187,8 @@ local function drawHex(group, x, y, color, colorName)
 	local centerX = 3 * size / 2 * (x - 1) + size
 	local centerY =  h * ( 2 * (y -1) + (x - 1) % 2) + h
 
-	local myText = display.newText("(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, 56)
-
 	local hex = display.newPolygon(group, centerX, centerY, vertices)
+	local myText = display.newText(group, "(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, 56)
 	hex:setFillColor(unpack(color))
 	hex:setStrokeColor(unpack(strokeGray))
 	hex.strokeWidth = 3
@@ -198,10 +200,31 @@ local function randomIndex(array)
 end
 
 
+local map = display.newGroup()
+
+function map:touch(event)
+
+	if event.phase == "began" then
+		display.getCurrentStage():setFocus(self, event.id)
+		self.isFocus = true
+
+		self.markX = self.x
+		self.markY = self.y
+	elseif self.isFocus then
+
+		if (event.phase == "moved") then
+			self.x = event.x - event.xStart + self.markX
+			self.y = event.y - event.yStart + self.markY
+		elseif (event.phase == "ended" or event.phase == "cancelled") then
+			display.getCurrentStage():setFocus(self, nil)
+			self.isFocus = false
+		end
+	end
+
+	return true
+end
 
 local function drawMap()
-
-	local map = display.newGroup()
 
 	for i=1,xSize do
 		result[i] = {}
@@ -211,6 +234,10 @@ local function drawMap()
 			result[i][j].sprite:addEventListener("tap", result[i][j].sprite)
 		end
 	end
+
+	map:addEventListener("touch", map)
+
+	map:scale(scale, scale)
 
 	return result
 
