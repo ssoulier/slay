@@ -1,4 +1,5 @@
 local composer = require( "composer" )
+local world = require("world")
 
 local scene = composer.newScene()
 
@@ -7,22 +8,7 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 
-local xSize = 15
-local ySize = 25
-
-local utils = require('utils')
-
-local map = utils.drawMap(xSize,ySize)
-
-local function highlightHex()
-	for i=1,xSize do
-		for j=1,ySize do
-			
-		end
-	end
-end
-
-
+world.drawMap()
 
 
 -- -----------------------------------------------------------------------------------
