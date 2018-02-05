@@ -95,20 +95,40 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty, worldCoordi
 end
 
 
-local function Hex(x, y, color, colorName, sprite)
+local function Hex(x, y, color, colorName, sprite, soldier)
 	function sprite:tap(event)
+		transition.cancel()
+
 		if(selectedCounty ~= nil) then
 			gameDisplay.selectedCounty:removeSelf()
 		end
 		gameDisplay.selectedCounty = display.newGroup()
 		highlightFrontier(x, y, colorName, {}, gameDisplay.selectedCounty, mapData.mapCoordinates)
+
+		local function onCancel(obj)
+			obj.alpha = 1
+		end
+
+		print(soldier)
+		if soldier ~= nil then
+			transition.to( soldier, { time=500, iterations = -1, alpha=0.1, onCancel=onCancel})
+		end
 	end
 
 	return {x = x, y = y, color = color, colorName = colorName, sprite = sprite}
 end
 
+local function pixelCenter(x, y)
+	local h = gameConfig.size * math.sqrt(3) / 2
 
-local function drawHex(group, x, y, color, colorName)
+	local centerX = 3 * gameConfig.size / 2 * (x - 1) + gameConfig.size
+	local centerY =  h * ( 2 * (y -1) + (x - 1) % 2) + h
+
+	return {centerX, centerY}
+end
+
+
+local function drawHex(group, x, y, color, colorName, soldier)
 
 	local h = gameConfig.size * math.sqrt(3) / 2
 
@@ -121,15 +141,27 @@ local function drawHex(group, x, y, color, colorName)
 		- gameConfig.size / 2, y + h,
 	}
 
-	local centerX = 3 * gameConfig.size / 2 * (x - 1) + gameConfig.size
-	local centerY =  h * ( 2 * (y -1) + (x - 1) % 2) + h
+	centers = pixelCenter(x, y)
+	local centerX = centers[1]
+	local centerY = centers[2]	
 
-	local hex = display.newPolygon(group, centerX, centerY, vertices)
-	local myText = display.newText(group, "(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, 56)
+	local hexGroup = display.newGroup()
+	local hex = display.newPolygon(hexGroup, centerX, centerY, vertices)
 	hex:setFillColor(unpack(color))
 	hex:setStrokeColor(unpack(strokeGray))
 	hex.strokeWidth = 3
-	return Hex(x, y, color, colorName, hex)
+
+	local soldierDisplay = nil
+	if soldier then
+		soldierDisplay = display.newRect(hexGroup, centerX, centerY, gameConfig.soldierSize, gameConfig.soldierSize)
+		soldierDisplay:setFillColor(1,0,0)
+	end
+
+	local myText = display.newText(hexGroup, "(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, 56)
+
+	group:insert(hexGroup)
+
+	return Hex(x, y, color, colorName, hexGroup, soldierDisplay)
 end
 
 

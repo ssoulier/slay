@@ -12,6 +12,7 @@ local mapCoordinates = mapData.mapCoordinates
 function gameDisplay.map:touch(event)
 
 	if event.phase == "began" then
+		transition.cancel()
 		if gameDisplay.selectedCounty ~= nil then
 			gameDisplay.selectedCounty:removeSelf()
 			gameDisplay.selectedCounty = nil
@@ -41,7 +42,7 @@ local function drawMap()
 
 	for i=1,gameConfig.xSize do
 		for j=1,gameConfig.ySize do
-			local currentHex = hex.drawHex(gameDisplay.map, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName)
+			local currentHex = hex.drawHex(gameDisplay.map, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName, mapCoordinates[i][j].soldier)
 			currentHex.sprite:addEventListener("tap", mapCoordinates[i][j].sprite)
 		end
 	end

@@ -2,8 +2,12 @@ gameConfig = {}
 
 gameConfig.size = 120
 gameConfig.scale = 0.8
-gameConfig.xSize = 15
-gameConfig.ySize = 25
+gameConfig.xSize = 6
+gameConfig.ySize = 8
+
+gameConfig.soldierSize = gameConfig.size / 3
+gameConfig.soldiers = 1
+gameConfig.towns = 1
 
 gameConfig.selectedCounty = display.newGroup()
 gameConfig.map = display.newGroup()

@@ -6,11 +6,21 @@ mapData = {}
 local function generateMap()
 
 	local mapCoordinates = {}
+	local soldiersAttributed = {}
 	for i=1,gameConfig.xSize do
 		mapCoordinates[i] = {}
 		for j=1,gameConfig.ySize do
 			local index = utils.randomIndex(gameConfig.colors)
-			mapCoordinates[i][j] = {color=gameConfig.colors[index], colorName=gameConfig.colorNames[index]}
+			local colorName = gameConfig.colorNames[index]
+			local soldier = true
+
+			if (soldiersAttributed[colorName] == nil) then
+				soldiersAttributed[colorName] = soldier
+			else
+				soldier = false
+			end
+
+			mapCoordinates[i][j] = {color=gameConfig.colors[index], colorName=gameConfig.colorNames[index], soldier=soldier}
 		end
 	end
 
