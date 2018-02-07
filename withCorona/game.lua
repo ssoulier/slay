@@ -8,7 +8,10 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 
+display.setDefault("background", 71/255, 165/255, 188/255)
+
 world.drawMap()
+world.drawMiniMap()
 
 
 -- -----------------------------------------------------------------------------------

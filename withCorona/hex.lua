@@ -20,8 +20,8 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty, worldCoordi
 	local h = scaleSize * math.sqrt(3) / 2
 	local centerX = 3 * scaleSize / 2 * (x - 1) + scaleSize + gameDisplay.map.x
 	local centerY =  h * ( 2 * (y - 1) + (x - 1) % 2) + h + gameDisplay.map.y
-	local strokeColor = {0,0,0}
-	local strokeWidth = 20
+	local strokeColor = gameConfig.countyStrokeColor
+	local strokeWidth = gameConfig.countyStrokeWidth
 
 	local lag = x % 2
 
@@ -109,7 +109,6 @@ local function Hex(x, y, color, colorName, sprite, soldier)
 			obj.alpha = 1
 		end
 
-		print(soldier)
 		if soldier ~= nil then
 			transition.to( soldier, { time=500, iterations = -1, alpha=0.1, onCancel=onCancel})
 		end
@@ -148,8 +147,8 @@ local function drawHex(group, x, y, color, colorName, soldier)
 	local hexGroup = display.newGroup()
 	local hex = display.newPolygon(hexGroup, centerX, centerY, vertices)
 	hex:setFillColor(unpack(color))
-	hex:setStrokeColor(unpack(strokeGray))
-	hex.strokeWidth = 3
+	hex:setStrokeColor(unpack(gameConfig.hexStrokeColor))
+	hex.strokeWidth = gameConfig.hexStrokeWidth
 
 	local soldierDisplay = nil
 	if soldier then
@@ -157,7 +156,9 @@ local function drawHex(group, x, y, color, colorName, soldier)
 		soldierDisplay:setFillColor(1,0,0)
 	end
 
-	local myText = display.newText(hexGroup, "(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, 56)
+	if gameConfig.debug then
+		local myText = display.newText(hexGroup, "(" .. tostring(x) .. ", " .. tostring(y) .. ")", centerX, centerY, native.systemFont, gameConfig.coordinateSize)
+	end
 
 	group:insert(hexGroup)
 
