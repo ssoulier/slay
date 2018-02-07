@@ -42,7 +42,7 @@ local function drawMap()
 
 	for i=1,gameConfig.xSize do
 		for j=1,gameConfig.ySize do
-			local currentHex = hex.drawHex(gameDisplay.map, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName, mapCoordinates[i][j].soldier)
+			local currentHex = hex.drawHex(gameDisplay.map, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName, mapCoordinates[i][j].soldier, 'normal')
 			currentHex.sprite:addEventListener("tap", mapCoordinates[i][j].sprite)
 		end
 	end
@@ -51,9 +51,9 @@ local function drawMap()
 
 	gameDisplay.map:scale(gameConfig.scale, gameConfig.scale)
 
-	gameDisplay.map.x = display.contentCenterX / 2
-	gameDisplay.map.y = display.contentCenterY /2
-	gameDisplay.map.anchor = 0.5
+	--gameDisplay.map.x = display.contentCenterX / 2
+	--gameDisplay.map.y = display.contentCenterY /2
+	--gameDisplay.map.anchor = 0.5
 
 end
 
@@ -62,22 +62,15 @@ local function drawMiniMap()
 
 	for i=1,gameConfig.xSize do
 		for j=1,gameConfig.ySize do
-			local currentHex = hex.drawHex(gameDisplay.miniMap, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName, false)
+			local currentHex = hex.drawHex(gameDisplay.miniMap, i, j, mapCoordinates[i][j].color, mapCoordinates[i][j].colorName, false, 'mini')
 			currentHex.sprite:addEventListener("tap", mapCoordinates[i][j].sprite)
 		end
 	end
 
-	gameDisplay.miniMap:addEventListener("touch", gameDisplay.miniMap)
-
-	--gameDisplay.x = 0
-	--gameDisplay.y = display.contentHeight * (1-gameDisplay.miniMapScale)
 	gameDisplay.miniMap:scale(gameConfig.miniMapScale, gameConfig.miniMapScale)
 	gameDisplay.miniMap.x = display.contentWidth - gameDisplay.miniMap.contentWidth
 	gameDisplay.miniMap.y = 0
-	print("contentHeight: " .. gameDisplay.miniMap.contentHeight)
-	print("contentWidth: " ..gameDisplay.miniMap.contentWidth)
-	print("contentHeight: " .. display.contentHeight)
-	print("contentWidth: " .. display.contentWidth)
+
 	
 
 

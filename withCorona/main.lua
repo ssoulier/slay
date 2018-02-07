@@ -22,7 +22,7 @@ local function onMouseEvent( event )
 end
                               
 -- Add the mouse event listener.
-Runtime:addEventListener( "mouse", onMouseEvent )
+--Runtime:addEventListener( "mouse", onMouseEvent )
 ----------------------------------------------------
 
 -- Hide status bar

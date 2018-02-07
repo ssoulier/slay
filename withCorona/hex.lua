@@ -4,6 +4,27 @@ local gameConfig = require('gameConfig')
 local gameDisplay = require('gameDisplay')
 hex = {}
 
+
+
+local function getHexCenter(x, y, map)
+	local scaleSize = gameConfig.scale * gameConfig.size
+	local h = scaleSize * math.sqrt(3) / 2
+
+	mapDelta = {}
+	mapDelta.x = 0
+	mapDelta.y = 0
+	if(map ~= nil) then
+		mapDelta.x = map.x
+		mapDelta.y = map.y 
+	end
+
+	local centerX = 3 * scaleSize / 2 * (x - 1) + scaleSize + mapDelta.x
+	local centerY =  h * ( 2 * (y - 1) + (x - 1) % 2) + h + mapDelta.y
+
+	return {centerX, centerY, scaleSize, h}
+end
+
+
 local highlightFrontier
 highlightFrontier = function(x, y, colorName , done, selectedCounty, worldCoordinates)
 	
@@ -15,11 +36,11 @@ highlightFrontier = function(x, y, colorName , done, selectedCounty, worldCoordi
 		return nil
 	end
 
-	local scaleSize = gameConfig.scale * gameConfig.size
-
-	local h = scaleSize * math.sqrt(3) / 2
-	local centerX = 3 * scaleSize / 2 * (x - 1) + scaleSize + gameDisplay.map.x
-	local centerY =  h * ( 2 * (y - 1) + (x - 1) % 2) + h + gameDisplay.map.y
+	local centers = getHexCenter(x, y, gameDisplay.map)
+	local centerX = centers[1]
+	local centerY = centers[2]
+	local scaleSize = centers[3]
+	local h = centers[4]
 	local strokeColor = gameConfig.countyStrokeColor
 	local strokeWidth = gameConfig.countyStrokeWidth
 
@@ -99,7 +120,7 @@ local function Hex(x, y, color, colorName, sprite, soldier)
 	function sprite:tap(event)
 		transition.cancel()
 
-		if(selectedCounty ~= nil) then
+		if(gameDisplay.selectedCounty ~= nil) then
 			gameDisplay.selectedCounty:removeSelf()
 		end
 		gameDisplay.selectedCounty = display.newGroup()
@@ -117,17 +138,32 @@ local function Hex(x, y, color, colorName, sprite, soldier)
 	return {x = x, y = y, color = color, colorName = colorName, sprite = sprite}
 end
 
-local function pixelCenter(x, y)
-	local h = gameConfig.size * math.sqrt(3) / 2
 
-	local centerX = 3 * gameConfig.size / 2 * (x - 1) + gameConfig.size
-	local centerY =  h * ( 2 * (y -1) + (x - 1) % 2) + h
+local function miniHex(x,y,color, colorName, sprite)
+	function sprite:tap(event)
+		if(gameDisplay.selectedCounty ~= nil) then
+			gameDisplay.selectedCounty:removeSelf()
+			gameDisplay.selectedCounty = nil
+		end
 
-	return {centerX, centerY}
+		print("Inside miniHex Tap")
+		centers = getHexCenter(x, y)
+		print(centers[1])
+		print(display.contentCenterX)
+		print(gameDisplay.map.x)
+
+
+		gameDisplay.map:translate(display.contentCenterX - centers[1] - gameDisplay.map.x, display.contentCenterY - centers[2] - gameDisplay.map.y )
+	end
+
+
+	return {x = x, y = y, color = color, colorName = colorName, sprite = sprite}
 end
 
 
-local function drawHex(group, x, y, color, colorName, soldier)
+
+
+local function drawHex(group, x, y, color, colorName, soldier, hexType)
 
 	local h = gameConfig.size * math.sqrt(3) / 2
 
@@ -140,7 +176,7 @@ local function drawHex(group, x, y, color, colorName, soldier)
 		- gameConfig.size / 2, y + h,
 	}
 
-	centers = pixelCenter(x, y)
+	centers = getHexCenter(x, y)
 	local centerX = centers[1]
 	local centerY = centers[2]	
 
@@ -162,7 +198,11 @@ local function drawHex(group, x, y, color, colorName, soldier)
 
 	group:insert(hexGroup)
 
-	return Hex(x, y, color, colorName, hexGroup, soldierDisplay)
+	if hexType == 'mini' then
+		return miniHex(x, y, color, colorName, hexGroup)
+	else
+		return Hex(x, y, color, colorName, hexGroup, soldierDisplay)
+	end
 end
 
 
