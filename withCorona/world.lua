@@ -8,6 +8,40 @@ world = {}
 
 local mapCoordinates = mapData.mapCoordinates
 
+local function onMouseScroll( event )
+
+	if event.type == 'scroll' then
+
+		if event.scrollY > 0 then -- Zoom OUT
+
+			if gameDisplay.map.xScale > gameConfig.scaleMin then
+				gameDisplay.map.xScale = math.max(gameDisplay.map.xScale - gameConfig.scaleTick, gameConfig.scaleMin)
+				gameDisplay.map.yScale = math.max(gameDisplay.map.yScale - gameConfig.scaleTick, gameConfig.scaleMin)
+			else
+				gameDisplay.map.xScale = gameConfig.scaleMin
+				gameDisplay.map.yScale = gameConfig.scaleMin
+			end
+
+		elseif event.scrollY < 0  then -- Zoom IN
+
+			if gameDisplay.map.xScale < gameConfig.scaleMax then
+				gameDisplay.map.xScale = math.min(gameDisplay.map.xScale  + gameConfig.scaleTick, gameConfig.scaleMax)
+				gameDisplay.map.yScale = math.min(gameDisplay.map.yScale  + gameConfig.scaleTick, gameConfig.scaleMax)
+			else
+				gameDisplay.map.xScale = gameConfig.scaleMax
+				gameDisplay.map.yScale = gameConfig.scaleMax
+			end
+
+		end
+
+		print(event.scrollY)
+		print(gameDisplay.map.xScale, gameDisplay.map.yScale)
+	end
+
+end
+
+Runtime:addEventListener("mouse", onMouseScroll)
+
 
 function gameDisplay.map:touch(event)
 
@@ -51,9 +85,6 @@ local function drawMap()
 
 	gameDisplay.map:scale(gameConfig.scale, gameConfig.scale)
 
-	--gameDisplay.map.x = display.contentCenterX / 2
-	--gameDisplay.map.y = display.contentCenterY /2
-	--gameDisplay.map.anchor = 0.5
 
 end
 

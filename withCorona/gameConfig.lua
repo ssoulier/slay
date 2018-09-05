@@ -40,7 +40,10 @@ gameConfig.debug = false
 gameConfig.coordinateSize = 20
 
 
-
+------- Zoom
+gameConfig.scaleTick = 0.1
+gameConfig.scaleMin = 0.2
+gameConfig.scaleMax = 2
 
 gameConfig.colors = {blue, green, orange, pink, yellow}
 gameConfig.colorNames = {"blue", "green", "orange", "pink", "yellow"}

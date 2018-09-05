@@ -18,11 +18,15 @@ performance:newPerformanceMeter()
 local function onMouseEvent( event )
     -- Print the mouse cursor's current position to the log.
     local message = "Mouse Position = (" .. tostring(event.x) .. "," .. tostring(event.y) .. ")"
-    print( message )
+    for k, v in pairs(event) do
+    	print(k .. ' : ' .. tostring(v))
+    end
+    -- print('Middle button is down: ' .. tostring(event.scrollY))
+    -- print( message )
 end
                               
 -- Add the mouse event listener.
---Runtime:addEventListener( "mouse", onMouseEvent )
+-- Runtime:addEventListener( "mouse", onMouseEvent )
 ----------------------------------------------------
 
 -- Hide status bar

@@ -176,7 +176,7 @@ local function drawHex(group, x, y, color, colorName, soldier, hexType)
 		- gameConfig.size / 2, y + h,
 	}
 
-	centers = getHexCenter(x, y)
+	local centers = getHexCenter(x, y)
 	local centerX = centers[1]
 	local centerY = centers[2]	
 
