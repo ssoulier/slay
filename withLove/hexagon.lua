@@ -1,14 +1,15 @@
-Object = require 'utils/classic'
-game_settings = require 'config/game_settings'
+local Object = require 'utils/classic'
+local game_settings = require 'config/game_settings'
 
 
 
-hex = Object:extend()
+local hex = Object:extend()
 
 function hex:new(x, y, type)
 
 	self.x = x
 	self.y = y
+	self.isHighlighted = false
 
 	self.type = type
 
@@ -42,8 +43,7 @@ function hex:center(delta_x, delta_y)
 	return cx - delta_x, cy - delta_y
 end
 
-function hex:draw(delta_x, delta_y)
-
+function hex:vertices(delta_x, delta_y)
 	local s = game_settings.size
 	local h = s * math.sqrt(3) / 2
 
@@ -57,6 +57,13 @@ function hex:draw(delta_x, delta_y)
 		cx + h, cy + s / 2,
 		cx + h, cy - s/2,
 	}
+
+	return vertices
+end
+
+function hex:draw(delta_x, delta_y)
+
+	local vertices = self:vertices(delta_x, delta_y)
 	
 	if self.type == 'center' then
 
@@ -65,11 +72,10 @@ function hex:draw(delta_x, delta_y)
 		love.graphics.setColor(1,1,1)
 		love.graphics.polygon('line', vertices)
 	else
-
+		
 		love.graphics.setColor(1,1,1)
 		love.graphics.polygon('line', vertices)
 	end
-
 
 end
 

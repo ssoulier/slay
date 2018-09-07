@@ -1,9 +1,12 @@
 local Object = require 'utils/classic'
 local map_settings = require 'config/map_settings'
+local game_settings = require 'config/game_settings'
 local hexagon = require 'hexagon'
 local gauss = require 'utils/gauss'
+local graph = require 'utils/graph'
+local county = require 'classes/county'
 
-map = Object:extend()
+local map = Object:extend()
 
 local left_button_pressed = false
 local ref_x, ref_y
@@ -11,11 +14,18 @@ local ref_x, ref_y
 function map:new()
 
 	self.hexagons = {}
-	local island = self:extractLargestIsland(self:extractIslands(self:smooth(self:altitude())))
+	self.county_selected = nil
+
+	local tiles = self:altitude()
+	tiles = self:smooth(tiles)
+	tiles = self:aboveWater(tiles)
+	tiles = self:extractIslands(tiles)
+
+	local island = self:extractLargestIsland(tiles)
 
 	for i, v in pairs(island) do
-		print(v[1],v[2])
-		table.insert(self.hexagons, hexagon(v[1], v[2], 'center'))
+		local index = (v[1] - 1) * map_settings.n_x + v[2]
+		self.hexagons[index] = hexagon(v[1], v[2], 'center')
 	end
 
 	--[[for i  = 1, map_settings.n_x do
@@ -93,32 +103,46 @@ function map:smooth(tiles)
 	return result
 end
 
-function map:extractIslands(tiles)
+function map:aboveWater(tiles)
 
 	local threshold = map_settings.island_threshold
+	local result = {}
+	for i, row in pairs(tiles) do
+		for j, v in pairs(row) do
+			local land = 0
+			if v > threshold then
+				land = 1
+			end
+			local index = (i -1)*map_settings.n_x + j
+			result[index] = land
+		end
 
-	local graph = require 'utils/graph'
+	end
+
+	return result
+end
+
+function map:extractIslands(tiles)
 
 	local islands = {}
 	local visited = {}
-	for i, row in pairs(tiles) do
+	for index, v in pairs(tiles) do
 
-		for j, v in pairs(row) do
+		if visited[index] == nil then
 
-			if visited[i] == nil or visited[i][j] == nil then
+			if v == 1 then
+				isle = {}
+				local m = math.floor(index / map_settings.n_x)
+				local n = index - m * map_settings.n_x
+				table.insert(isle, {m,n})
+				graph.dfs(tiles, visited, isle, m , n, 1, function(x) return x end)
 
-				if v > threshold then
-					isle = {}
-
-					graph.dfs(tiles, visited, isle, i, j, threshold)
-
-					table.insert(islands, isle)
-
-				end
+				table.insert(islands, isle)
 
 			end
 
 		end
+
 	end
 
 	return islands
@@ -142,17 +166,21 @@ end
 
 function map:draw(delta_x,delta_y)
 
-	for i = 1, #self.hexagons do
-		self.hexagons[i]:draw(delta_x, delta_y)
+	for i, hexagon in pairs(self.hexagons) do
+		hexagon:draw(delta_x, delta_y)
 	end
 
-	for i = 1, #self.hexagons do
-		self.hexagons[i]:addText(delta_x, delta_y)
+	for i, hexagon in pairs(self.hexagons) do
+		hexagon:addText(delta_x, delta_y)
+	end
+
+	if self.county_selected ~= nil then
+		self.county_selected:draw(delta_x, delta_y)
 	end
 
 end
 
-function map:update(dt, delta_x, delta_y)
+function map:move(dt, delta_x, delta_y)
 
 	if love.mouse.isDown(1) then
 
@@ -170,6 +198,44 @@ function map:update(dt, delta_x, delta_y)
 
 	return delta_x, delta_y
 
+end
+
+
+function map:highlight(delta_x, delta_y)
+
+	if previousMouseState.leftDown then
+
+		for index, hexagon in pairs(self.hexagons) do
+			hexagon.isHighlighted = false
+		end
+
+		local s = game_settings.size
+		local y = round(2*(love.mouse.getY() + delta_y - s) / (3 * s) + 1, 0)
+
+		local h = s * math.sqrt(3) / 2
+
+		local x = round((love.mouse.getX() + delta_x - (y % 2)*h)/(2*h) + 1)
+
+		local index = (x-1) * map_settings.n_x + y
+
+		if self.hexagons[index] ~= nil then
+			local county_indices = {}
+			local visited = {}
+			
+			local value = self.hexagons[index].color
+			table.insert(county_indices, {x,y})
+
+			graph.dfs(self.hexagons, visited, county_indices, x, y, value, function(x) return x.color end)
+
+			local county_hexagons = {}
+			for i, v in pairs(county_indices) do
+				local index = (v[1] - 1) * map_settings.n_x + v[2]
+				county_hexagons[index] = self.hexagons[index]
+			end
+
+			self.county_selected = county(county_hexagons)
+		end
+	end
 end
 
 
