@@ -2,7 +2,7 @@ local Object = require 'utils/classic'
 local map_settings = require 'config/map_settings'
 local game_settings = require 'config/game_settings'
 local hexagon = require 'hexagon'
-local gauss = require 'utils/gauss'
+local utils = require 'utils/utils'
 local graph = require 'utils/graph'
 local county = require 'classes/county'
 
@@ -53,8 +53,7 @@ function map:altitude()
 
 			mu = altitude_min * math.pow(1 + alpha, d + 1)
 
-			r = gauss.random(mu, sigma)
-
+			r = utils.randomGauss(mu, sigma)
 			table.insert(row, r)
 
 		end
@@ -113,7 +112,7 @@ function map:aboveWater(tiles)
 			if v > threshold then
 				land = 1
 			end
-			local index = (i -1)*map_settings.n_x + j
+			local index = (i - 1)*map_settings.n_x + j
 			result[index] = land
 		end
 
@@ -132,8 +131,8 @@ function map:extractIslands(tiles)
 
 			if v == 1 then
 				isle = {}
-				local m = math.floor(index / map_settings.n_x)
-				local n = index - m * map_settings.n_x
+				local m = math.modf(index / map_settings.n_x) + 1
+				local n = index  - (m - 1) * map_settings.n_x
 				table.insert(isle, {m,n})
 				graph.dfs(tiles, visited, isle, m , n, 1, function(x) return x end)
 
@@ -180,7 +179,7 @@ function map:draw(delta_x,delta_y)
 
 end
 
-function map:move(dt, delta_x, delta_y)
+function map:move(delta_x, delta_y)
 
 	if love.mouse.isDown(1) then
 
@@ -189,6 +188,7 @@ function map:move(dt, delta_x, delta_y)
    			ref_x = x + delta_x
    			ref_y = y + delta_y
    			left_button_pressed = true
+   			self.county_selected = nil
    		end
    			delta_x = ref_x - x
       		delta_y = ref_y - y
@@ -203,38 +203,36 @@ end
 
 function map:highlight(delta_x, delta_y)
 
-	if previousMouseState.leftDown then
 
-		for index, hexagon in pairs(self.hexagons) do
-			hexagon.isHighlighted = false
+	for index, hexagon in pairs(self.hexagons) do
+		hexagon.isHighlighted = false
+	end
+
+	local s = game_settings.size
+	local y = utils.round(2*(love.mouse.getY() + delta_y - s) / (3 * s) + 1, 0)
+
+	local h = s * math.sqrt(3) / 2
+
+	local x = utils.round((love.mouse.getX() + delta_x - (y % 2)*h)/(2*h) + 1)
+
+	local index = (x-1) * map_settings.n_x + y
+
+	if self.hexagons[index] ~= nil then
+		local county_indices = {}
+		local visited = {}
+		
+		local value = self.hexagons[index].color
+		table.insert(county_indices, {x,y})
+
+		graph.dfs(self.hexagons, visited, county_indices, x, y, value, function(x) return x.color end)
+
+		local county_hexagons = {}
+		for i, v in pairs(county_indices) do
+			local index = (v[1] - 1) * map_settings.n_x + v[2]
+			county_hexagons[index] = self.hexagons[index]
 		end
 
-		local s = game_settings.size
-		local y = round(2*(love.mouse.getY() + delta_y - s) / (3 * s) + 1, 0)
-
-		local h = s * math.sqrt(3) / 2
-
-		local x = round((love.mouse.getX() + delta_x - (y % 2)*h)/(2*h) + 1)
-
-		local index = (x-1) * map_settings.n_x + y
-
-		if self.hexagons[index] ~= nil then
-			local county_indices = {}
-			local visited = {}
-			
-			local value = self.hexagons[index].color
-			table.insert(county_indices, {x,y})
-
-			graph.dfs(self.hexagons, visited, county_indices, x, y, value, function(x) return x.color end)
-
-			local county_hexagons = {}
-			for i, v in pairs(county_indices) do
-				local index = (v[1] - 1) * map_settings.n_x + v[2]
-				county_hexagons[index] = self.hexagons[index]
-			end
-
-			self.county_selected = county(county_hexagons)
-		end
+		self.county_selected = county(county_hexagons)
 	end
 end
 

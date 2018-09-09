@@ -1,5 +1,7 @@
 local Object = require 'utils/classic'
 local game_settings = require 'config/game_settings'
+local draw = require 'utils/draw'
+local soldier = require 'soldier'
 
 
 
@@ -13,7 +15,14 @@ function hex:new(x, y, type)
 
 	self.type = type
 
-	self.color = math.random(2,4)
+	self.color = math.random(2,#game_settings.colors)
+
+	local containSoldier = math.random(1,10)
+	if containSoldier == 1 then
+		self.soldier = soldier(self.x, self.y)
+	else
+		self.soldier = nil
+	end
 	--self:setColor()
 	
 end
@@ -34,13 +43,7 @@ end
 
 function hex:center(delta_x, delta_y)
 	local s = game_settings.size
-	local h = s * math.sqrt(3) / 2
-
-
-	local cx = 2*h*(self.x - 1) + ( self.y % 2) * h
-	local cy = s + 3*(self.y-1)*s/2
-
-	return cx - delta_x, cy - delta_y
+	return draw.center(self.x, self.y, delta_x, delta_y, s)
 end
 
 function hex:vertices(delta_x, delta_y)
@@ -76,6 +79,12 @@ function hex:draw(delta_x, delta_y)
 		love.graphics.setColor(1,1,1)
 		love.graphics.polygon('line', vertices)
 	end
+
+	if self.soldier then
+		self.soldier:draw(delta_x,delta_y)
+	end
+
+
 
 end
 

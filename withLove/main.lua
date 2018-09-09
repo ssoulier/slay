@@ -14,6 +14,7 @@ function love.load()
 
 	-- Table that store the mouse state
 	previousMouseState = {}
+	currentMouseState = {}
 	
 end
 
@@ -26,20 +27,22 @@ function love.draw()
 end
 
 function love.update(dt)
-	delta_x, delta_y = world:move(dt, delta_x, delta_y)
-	world:highlight(delta_x, delta_y)
+	delta_x, delta_y = world:move(delta_x, delta_y)
+end
 
-	-- Store mouse state
-	previousMouseState.leftDown = love.mouse.isDown(1)
+function love.mousepressed(x, y, button, istouch, presses)
+   	previousMouseState = currentMouseState
+   	if button == 1 then
+   		currentMouseState.leftDown = true
+   	end
 
 end
 
-function love.mousepressed(x, y, button, istouch)
-   
-end
-
-
-function round(num, numDecimalPlaces)
-  local mult = 10^(numDecimalPlaces or 0)
-  return math.floor(num * mult + 0.5) / mult
+function love.mousereleased(x, y, button, istouch, presses)
+	
+	if button == 1 then
+		previousMouseState.leftDown = true
+		currentMouseState.leftDown = false
+		world:highlight(delta_x, delta_y)
+	end
 end
