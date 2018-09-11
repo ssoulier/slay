@@ -14,7 +14,6 @@ local ref_x, ref_y
 function map:new()
 
 	self.hexagons = {}
-	self.county_selected = nil
 
 	local tiles = self:altitude()
 	tiles = self:smooth(tiles)
@@ -28,12 +27,37 @@ function map:new()
 		self.hexagons[index] = hexagon(v[1], v[2], 'center')
 	end
 
-	--[[for i  = 1, map_settings.n_x do
-		for j = 1, map_settings.n_y do
-			table.insert(self.hexagons, hexagon(i,j, 'line'))
-		end
-	end--]]
+	self:extractCounties()
 
+end
+
+function map:extractCounties()
+
+	self.counties = {}
+	local visited = {}
+	for index, hexagon in pairs(self.hexagons) do
+
+		if visited[index] == nil then
+
+			local m = math.modf(index / map_settings.n_x) + 1
+			local n = index  - (m - 1) * map_settings.n_x
+			local county_indices = {}		
+			local value = hexagon.color
+			table.insert(county_indices, {m, n})
+			visited[index] = 1
+
+			graph.dfs(self.hexagons, visited, county_indices, m, n, value, function(x) return x.color end)
+
+			local county_hexagons = {}
+			for i, v in pairs(county_indices) do
+				local index = (v[1] - 1) * map_settings.n_x + v[2]
+				county_hexagons[index] = self.hexagons[index]
+			end
+
+			table.insert(self.counties, county(county_hexagons))
+		end
+
+	end
 end
 
 function map:altitude()
@@ -173,10 +197,9 @@ function map:draw(delta_x,delta_y)
 		hexagon:addText(delta_x, delta_y)
 	end
 
-	if self.county_selected ~= nil then
-		self.county_selected:draw(delta_x, delta_y)
+	for i, county in pairs(self.counties) do
+		county:draw(delta_x,delta_y)
 	end
-
 end
 
 function map:move(delta_x, delta_y)
@@ -203,9 +226,9 @@ end
 
 function map:highlight(delta_x, delta_y)
 
-
-	for index, hexagon in pairs(self.hexagons) do
-		hexagon.isHighlighted = false
+	-- Unselect previous county
+	for index, county in pairs(self.counties) do
+		county.isHighlighted = false
 	end
 
 	local s = game_settings.size
@@ -218,23 +241,18 @@ function map:highlight(delta_x, delta_y)
 	local index = (x-1) * map_settings.n_x + y
 
 	if self.hexagons[index] ~= nil then
-		local county_indices = {}
-		local visited = {}
-		
-		local value = self.hexagons[index].color
-		table.insert(county_indices, {x,y})
+		local selectedHexagon = self.hexagons[index]
+		for index, county in pairs(self.counties) do
 
-		graph.dfs(self.hexagons, visited, county_indices, x, y, value, function(x) return x.color end)
-
-		local county_hexagons = {}
-		for i, v in pairs(county_indices) do
-			local index = (v[1] - 1) * map_settings.n_x + v[2]
-			county_hexagons[index] = self.hexagons[index]
+			if county:contain(selectedHexagon) then
+				county.isHighlighted = true
+				return
+			end
 		end
-
-		self.county_selected = county(county_hexagons)
 	end
 end
 
 
 return map
+
+

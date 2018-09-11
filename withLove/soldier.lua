@@ -24,9 +24,12 @@ function soldier:draw(delta_x, delta_y)
 	local s = game_settings.size
 	local c_x, c_y = self:center(delta_x, delta_y)
 
+	love.graphics.setCanvas(map_canvas)
 	love.graphics.setColor(0,0,0,0.4)
-	love.graphics.ellipse('fill', c_x, c_y, s / 2, s / 2)
+	love.graphics.circle('fill', c_x, c_y, s / 2)
 	love.graphics.setColor(0,0,0, 1)
+	love.graphics.setCanvas()
+
 
 end
 

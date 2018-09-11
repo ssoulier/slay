@@ -1,7 +1,6 @@
 local Object = require 'utils/classic'
 local game_settings = require 'config/game_settings'
 local draw = require 'utils/draw'
-local soldier = require 'soldier'
 
 
 
@@ -11,18 +10,11 @@ function hex:new(x, y, type)
 
 	self.x = x
 	self.y = y
-	self.isHighlighted = false
 
 	self.type = type
 
 	self.color = math.random(2,#game_settings.colors)
 
-	local containSoldier = math.random(1,10)
-	if containSoldier == 1 then
-		self.soldier = soldier(self.x, self.y)
-	else
-		self.soldier = nil
-	end
 	--self:setColor()
 	
 end
@@ -80,12 +72,6 @@ function hex:draw(delta_x, delta_y)
 		love.graphics.polygon('line', vertices)
 	end
 
-	if self.soldier then
-		self.soldier:draw(delta_x,delta_y)
-	end
-
-
-
 end
 
 function hex:addText(delta_x, delta_y)
@@ -94,6 +80,7 @@ function hex:addText(delta_x, delta_y)
 	local text = self.x .. ','  .. self.y
 	local width = font:getWidth(text)
 	local height = font:getHeight()
+
 	love.graphics.print(text, math.floor(cx - width / 2), math.floor(cy - height / 2))
 end
 
