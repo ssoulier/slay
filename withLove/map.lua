@@ -5,6 +5,7 @@ local hexagon = require 'hexagon'
 local utils = require 'utils/utils'
 local graph = require 'utils/graph'
 local county = require 'classes/county'
+local draw = require 'utils/draw'
 
 local map = Object:extend()
 
@@ -24,7 +25,7 @@ function map:new()
 
 	for i, v in pairs(island) do
 		local index = (v[1] - 1) * map_settings.n_x + v[2]
-		self.hexagons[index] = hexagon(v[1], v[2], 'center')
+		self.hexagons[index] = hexagon(v[1], v[2])
 	end
 
 	self:extractCounties()
@@ -187,56 +188,56 @@ function map:extractLargestIsland(islands)
 	return result
 end
 
-function map:draw(delta_x,delta_y)
+function map:draw()
 
 	for i, hexagon in pairs(self.hexagons) do
-		hexagon:draw(delta_x, delta_y)
+		hexagon:draw()
 	end
 
 	for i, hexagon in pairs(self.hexagons) do
-		hexagon:addText(delta_x, delta_y)
+		hexagon:addText()
 	end
 
 	for i, county in pairs(self.counties) do
-		county:draw(delta_x,delta_y)
+		county:draw()
 	end
 end
 
-function map:move(delta_x, delta_y)
+
+function map:move()
 
 	if love.mouse.isDown(1) then
 
-		local x, y = love.mouse.getX(), love.mouse.getY()
-		if not left_button_pressed then
-   			ref_x = x + delta_x
-   			ref_y = y + delta_y
-   			left_button_pressed = true
-   			self.county_selected = nil
-   		end
-   			delta_x = ref_x - x
-      		delta_y = ref_y - y
-   	else
-    	left_button_pressed = false
-	end
+		if ref_x == nil or ref_y == nil then
+			ref_x, ref_y = love.mouse.getX(), love.mouse.getY()
+		end
 
-	return delta_x, delta_y
+		local x_incr, y_incr = love.mouse.getX() - ref_x, love.mouse.getY() - ref_y
+		ref_x, ref_y = love.mouse.getX(), love.mouse.getY()
+
+		translationX, translationY = translationX + x_incr, translationY + y_incr
+
+   	else
+   		ref_x, ref_y = nil, nil
+   	end
 
 end
 
 
-function map:highlight(delta_x, delta_y)
+function map:highlight()
 
 	-- Unselect previous county
 	for index, county in pairs(self.counties) do
 		county.isHighlighted = false
 	end
 
-	local s = game_settings.size
-	local y = utils.round(2*(love.mouse.getY() + delta_y - s) / (3 * s) + 1, 0)
+	local wx, wy = draw.screenToWorld(love.mouse.getX(), love.mouse.getY())
+
+	local y = utils.round(2*(wy - s) / (3 * s) + 1, 0)
 
 	local h = s * math.sqrt(3) / 2
 
-	local x = utils.round((love.mouse.getX() + delta_x - (y % 2)*h)/(2*h) + 1)
+	local x = utils.round((wx - (y % 2)*h)/(2*h) + 1)
 
 	local index = (x-1) * map_settings.n_x + y
 

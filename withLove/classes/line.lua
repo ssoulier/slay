@@ -14,11 +14,9 @@ function line:toTable()
 end
 
 function line:draw()
-	love.graphics.setColor(0,0,0)
-	love.graphics.setLineWidth(2)
+
 	love.graphics.line(self:toTable())
-	love.graphics.setColor(1,1,1)
-	love.graphics.setLineWidth(1)
+
 end
 
 

@@ -12,36 +12,35 @@ function town:new(hexagon)
 
 end
 
-function town:center(delta_x, delta_y)
+function town:center()
 
-	return draw.center(self.x, self.y, delta_x, delta_y, game_settings.size)
-
-end
-
-function town:roof(delta_x, delta_y)
-
-
+	return draw.center(self.x, self.y)
 
 end
 
-function town:wall(delta_x, delta_y)
+function town:roof()
+
 
 
 end
 
-function town:vertices(delta_x, delta_y)
+function town:wall()
 
-	local s = game_settings.size
+
+end
+
+function town:vertices()
+
 	--local h = s * math.sqrt(3) / 2
 	local x_size = s * 0.7
 	--h = x_size * math.sqrt(3) / 2
 	local h = 0.618 * x_size
 	local y_size = x_size  + h
 
-	local cx, cy = self:center(delta_x, delta_y)
+	local cx, cy = self:center()
 
 
-	return {
+	local vertices = {
 		cx - x_size / 2, cy - y_size / 2 + h,
 		cx, cy - y_size / 2,
 		cx + x_size / 2, cy - y_size / 2 + h,
@@ -49,16 +48,19 @@ function town:vertices(delta_x, delta_y)
 		cx - x_size / 2,  cy + y_size / 2
 	}
 
+	return vertices
+
 end
 
 
-function town:draw(delta_x, delta_y)
+function town:draw()
 
-	local vertices = self:vertices(delta_x, delta_y)
+	local vertices = self:vertices()
 
+	love.graphics.push()
 	love.graphics.setColor(0.05,0.05,0.05, 0.7)
 	love.graphics.polygon('line',vertices)
-	love.graphics.setColor(1,1,1)
+	love.graphics.pop()
 
 end
 

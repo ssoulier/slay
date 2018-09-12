@@ -12,23 +12,20 @@ function soldier:new(x, y)
 
 end
 
-function soldier:center(delta_x, delta_y)
+function soldier:center()
 
-	local s = game_settings.size
-	return draw.center(self.x, self.y, delta_x, delta_y, s)
+	return draw.center(self.x, self.y)
 
 end
 
-function soldier:draw(delta_x, delta_y)
+function soldier:draw()
 
-	local s = game_settings.size
-	local c_x, c_y = self:center(delta_x, delta_y)
+	local c_x, c_y = self:center()
 
-	love.graphics.setCanvas(map_canvas)
+	love.graphics.push()
 	love.graphics.setColor(0,0,0,0.4)
 	love.graphics.circle('fill', c_x, c_y, s / 2)
-	love.graphics.setColor(0,0,0, 1)
-	love.graphics.setCanvas()
+	love.graphics.push(pop)
 
 
 end

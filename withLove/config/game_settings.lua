@@ -1,6 +1,6 @@
 local game_settings = {}
 game_settings.size = 32
-game_settings.fontSize = 8
+game_settings.font_size =  game_settings.size / 4
 game_settings.scale = 1
 game_settings.debug = true
 game_settings.split_ratio = 0.8

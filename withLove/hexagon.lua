@@ -6,12 +6,10 @@ local draw = require 'utils/draw'
 
 local hex = Object:extend()
 
-function hex:new(x, y, type)
+function hex:new(x, y)
 
 	self.x = x
 	self.y = y
-
-	self.type = type
 
 	self.color = math.random(2,#game_settings.colors)
 
@@ -33,16 +31,14 @@ function hex:setColor()
 
 end
 
-function hex:center(delta_x, delta_y)
-	local s = game_settings.size
-	return draw.center(self.x, self.y, delta_x, delta_y, s)
+function hex:center()
+	return draw.center(self.x, self.y)
 end
 
-function hex:vertices(delta_x, delta_y)
-	local s = game_settings.size
+function hex:vertices()
 	local h = s * math.sqrt(3) / 2
 
-	local cx, cy = self:center(delta_x, delta_y)
+	local cx, cy = self:center()
 
 	local vertices = {
 		cx, cy - s,
@@ -56,32 +52,28 @@ function hex:vertices(delta_x, delta_y)
 	return vertices
 end
 
-function hex:draw(delta_x, delta_y)
+function hex:draw()
 
-	local vertices = self:vertices(delta_x, delta_y)
+	local vertices = self:vertices()
 	
-	if self.type == 'center' then
-
-		love.graphics.setColor(game_settings.colors[self.color])
-		love.graphics.polygon('fill', vertices)
-		love.graphics.setColor(1,1,1)
-		love.graphics.polygon('line', vertices)
-	else
-		
-		love.graphics.setColor(1,1,1)
-		love.graphics.polygon('line', vertices)
-	end
+	love.graphics.push()
+	love.graphics.setColor(game_settings.colors[self.color])
+	love.graphics.polygon('fill', vertices)
+	love.graphics.setColor(1,1,1)
+	love.graphics.polygon('line', vertices)
+	love.graphics.pop()
 
 end
 
-function hex:addText(delta_x, delta_y)
+function hex:addText()
 
-	local cx, cy = self:center(delta_x, delta_y)
+	local cx, cy = self:center()
 	local text = self.x .. ','  .. self.y
 	local width = font:getWidth(text)
 	local height = font:getHeight()
 
-	love.graphics.print(text, math.floor(cx - width / 2), math.floor(cy - height / 2))
+	local sx, sy = cx - width / 2, cy - height / 2
+	love.graphics.print(text, math.floor(sx), math.floor(sy))
 end
 
 return hex

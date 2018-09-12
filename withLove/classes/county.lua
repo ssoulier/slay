@@ -49,13 +49,13 @@ function county:size()
 	return size
 end
 
-function county:computeShape(delta_x, delta_y)
+function county:computeShape()
 
 	local function testLine(hexagons, current_hexagon, lines, i, j, orientation)
 		local index = i * map_settings.n_x + j
 
 		if hexagons[index] == nil then
-			local vertices = current_hexagon:vertices(delta_x, delta_y)
+			local vertices = current_hexagon:vertices()
 			if orientation == 'o' then
 				table.insert(lines, line(point(vertices[3], vertices[4]), point(vertices[5], vertices[6])))
 			elseif orientation == 'no' then
@@ -93,20 +93,26 @@ function county:computeShape(delta_x, delta_y)
 
 end
 
-function county:draw(delta_x, delta_y)
+function county:draw()
 
 	if self.isHighlighted then
-		self.shape = self:computeShape(delta_x, delta_y)	
+		self.shape = self:computeShape()	
 
+		love.graphics.push()
+		love.graphics.setLineWidth(2)
+		love.graphics.setColor(0,0,0)
 		for i, line in pairs(self.shape) do
 			line:draw()
 		end
+		love.graphics.setLineWidth(1)
+		love.graphics.pop()
 	end
 
 	if self.town ~= nil then
-		self.town:draw(delta_x, delta_y)
+		self.town:draw()
 	end
 	
+
 end
 
 return county
