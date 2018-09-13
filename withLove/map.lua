@@ -231,13 +231,7 @@ function map:highlight()
 		county.isHighlighted = false
 	end
 
-	local wx, wy = draw.screenToWorld(love.mouse.getX(), love.mouse.getY())
-
-	local y = utils.round(2*(wy - s) / (3 * s) + 1, 0)
-
-	local h = s * math.sqrt(3) / 2
-
-	local x = utils.round((wx - (y % 2)*h)/(2*h) + 1)
+	local x, y = draw.pixelTocenter(love.mouse.getX(), love.mouse.getY())
 
 	local index = (x-1) * map_settings.n_x + y
 

@@ -1,5 +1,6 @@
 local draw = {}
 local game_settings = require 'config/game_settings'
+local utils = require 'utils/utils'
 
 
 function draw.center(x, y)
@@ -10,33 +11,21 @@ function draw.center(x, y)
 	local cx = 2*h*(x - 1) + ( y % 2) * h
 	local cy = s + 3*(y-1)*s/2
 
-	return draw.worldToScreen(cx, cy)
+	return cx, cy
 end
 
-function draw.worldToScreen(wx, wy)
-	--return wx*scaleX + translationX, wy * scaleY + translationY
-	--return wx - translationX,  wy - translationY
-	return wx, wy
+function draw.pixelTocenter(px, py)
+
+	local wx, wy = draw.screenToWorld(px, py)
+	local y = utils.round(2*(wy - s) / (3 * s) + 1, 0)
+	local h = s * math.sqrt(3) / 2
+	local x = utils.round((wx - (y % 2)*h)/(2*h) + 1)
+
+	return x, y
 end
 
 function draw.screenToWorld(sx, sy)
-	return (sx-translationX)/scaleX, (sy-translationY)/scaleY
-	--return (sx-translationX)/scaleX, (sy-translationY)/scaleY
-	--return sx, sy
-end
-
-function draw.worldVerticesToScreen(vertices)
-
-	local result = {}
-	for i = 1, #vertices, 2 do
-
-		local sx, sy = draw.worldToScreen(vertices[i], vertices[i+1])
-		table.insert(result, sx)
-		table.insert(result, sy)
-	end
-
-	return result
-
+	return sx-translationX, sy-translationY
 end
 
 return draw
