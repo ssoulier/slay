@@ -1,0 +1,9 @@
+[submodule "withLove/libs/suit"]
+	path = withLove/libs/suit
+	url = git@github.com:vrld/suit.git
+[submodule "withLove/libs/hump"]
+	path = withLove/libs/hump
+	url = git@github.com:vrld/hump.git
+[submodule "withLove/libs/lume"]
+	path = withLove/libs/lume
+	url = git@github.com:rxi/lume.git
