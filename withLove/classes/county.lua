@@ -25,6 +25,8 @@ function county:init(hexagons)
 
 	self.trees = {}
 	self.graves = {}
+
+	self.floating_soldier = nil
 	
 end
 
@@ -106,6 +108,15 @@ function county:draw()
 		end
 		love.graphics.setLineWidth(1)
 		love.graphics.pop()
+
+		love.graphics.push()
+			love.graphics.origin()
+			local sx, sy, sw, sh = love.graphics.getScissor() 
+			love.graphics.setScissor()
+			love.graphics.setFont(fonts.county_statistics)
+			Suit:draw()
+			love.graphics.setScissor(sx, sy, sw, sh)
+		love.graphics.pop()
 	end
 
 	if self.town ~= nil then
@@ -116,14 +127,9 @@ function county:draw()
 		s:draw()
 	end
 
-	love.graphics.push()
-	--love.graphics.setScissor(love.graphics.getWidth( )* game_settings.split_ratio, 0,love.graphics.getWidth( )* (1-game_settings.split_ratio), love.graphics.getHeight())	love.graphics.setScissor()
-	love.graphics.origin()
-	local sx, sy, sw, sh = love.graphics.getScissor() 
-	love.graphics.setScissor()
-	Suit:draw()
-	love.graphics.setScissor(sx, sy, sw, sh)
-	love.graphics.pop()
+	if self.floating_soldier then
+		self.floating_soldier:draw()
+	end
 	
 	
 
@@ -145,8 +151,7 @@ function county:update()
 
 
 	    Suit.layout:reset(x_start, y_start)
-	    local headerFont = love.graphics.newFont(18)
-		Suit.Label('Finance', {font=headerFont}, Suit.layout:row(menu_layout_width , 20))
+		Suit.Label('Finance', {font=fonts.county_header}, Suit.layout:row(menu_layout_width , 20))
 
 	    Suit.layout:reset(x_start, y_start + 20 + 2*padding)
 	    Suit.layout:padding(padding)
@@ -163,10 +168,20 @@ function county:update()
 	    Suit.Label('- 2', {align='right'}, Suit.layout:down())
 	    Suit.Label('3', {align='right'}, Suit.layout:down())
 
-	    Suit.layout:reset(x_start + padding, y_start + 20 + 4*padding + 8*padding)
+	    Suit.layout:reset(x_start, y_start + 20 + 4*padding + 8*padding)
 	    Suit.layout:padding(2*padding)
-	    Suit.Button("Add Soldier", {align='center'}, Suit.layout:down(math.floor(menu_layout_width / 2) - 2*padding, 2*padding))
-	    Suit.Button("Add Tower", Suit.layout:right())
+
+	    if Suit.Button('Add Soldier', Suit.layout:down(math.floor(menu_layout_width / 2)- padding, 2*padding)).hit then
+	    	if self.floating_soldier == nil then
+
+	    		self.floating_soldier = soldier()
+	    	end
+	    end	
+
+
+	    if Suit.Button("Add Tower", Suit.layout:right()).hit then
+	    	
+	    end 
 
 	end
 end
@@ -174,6 +189,10 @@ end
 function county:menu()
 
 
+end
+
+function county:cancelFloatingSoldier()
+	self.floating_soldier = nil
 end
 
 function county:deploySoldier(x, y)

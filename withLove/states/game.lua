@@ -10,14 +10,8 @@ function game:init()
 
 	s = game_settings.size
 	local h = s * math.sqrt(3) / 2
-	font_size = game_settings.font_size
 	local map_center_x, map_center_y = draw.center(math.floor(map_settings.n_x / 2) , math.floor(map_settings.n_y / 2))
 	translationX, translationY = math.floor(love.graphics.getWidth() * game_settings.split_ratio / 2 -map_center_x), math.floor(love.graphics.getHeight() / 2 -map_center_y)
-
-	debug_font = love.graphics.newFont(8)
-
-	font = love.graphics.newFont(font_size)
-	love.graphics.setFont(font)
 
 end
 
@@ -27,7 +21,7 @@ end
 
 function game:draw()
 	love.graphics.push()
-	love.graphics.setFont(debug_font)
+	love.graphics.setFont(fonts.debug)
 	love.graphics.setColor(1,1,1)
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 	love.graphics.print('(' .. love.mouse.getX() .. ',' ..  love.mouse.getY() .. ')', 10, 20)
@@ -50,9 +44,17 @@ end
 
 function game:mousemoved(x, y, dx, dy, istouch)
 
+	if love.mouse.isDown(1) and x < love.graphics.getWidth() * game_settings.split_ratio then
 		world:mousemoved(x, y, dx, dy)
+	end
 end
 
+function game:mousepressed(x, y, button, istouch, presses)
+
+	if button == 2 then
+		world:cancel()
+	end
+end
 
 function game:mousereleased(x, y, button, istouch, presses)
 	
@@ -78,8 +80,7 @@ function game:wheelmoved(x, y)
 	translationX, translationY = translationX + math.floor(before_map_center_x - after_map_center_x), translationY + math.floor(before_map_center_y - after_map_center_y)
 
 	font_size = math.floor( game_settings.font_size * s / game_settings.size)
-	font = love.graphics.newFont(font_size)
-	love.graphics.setFont(font)
+	fonts.hex = love.graphics.newFont(font_size)
 
 end
 

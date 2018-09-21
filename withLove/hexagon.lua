@@ -68,8 +68,8 @@ function hex:addText()
 
 	local cx, cy = self:center()
 	local text = self.x .. ','  .. self.y
-	local width = font:getWidth(text)
-	local height = font:getHeight()
+	local width = fonts.hex:getWidth(text)
+	local height = fonts.hex:getHeight()
 
 	local sx, sy = cx - width / 2, cy - height / 2
 	love.graphics.print(text, math.floor(sx), math.floor(sy))

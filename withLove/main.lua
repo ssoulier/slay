@@ -5,6 +5,7 @@ Suit = require 'libs/suit'
 game_settings = require 'config/game_settings'
 map_settings = require 'config/map_settings'
 draw = require 'utils/draw'
+fonts = require 'fonts'
 local menu = require 'states/menu'
 
 
@@ -13,6 +14,7 @@ io.stdout:setvbuf("no")
 
 function love.load()
 	math.randomseed( os.time())
+
 	Gamestate.registerEvents()
 	Gamestate.switch(menu)
 end

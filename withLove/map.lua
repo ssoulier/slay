@@ -202,7 +202,7 @@ function map:draw()
 
 	love.graphics.push()
 	love.graphics.setScissor(0, 0,love.graphics.getWidth() * game_settings.split_ratio, love.graphics.getHeight())
-	love.graphics.setFont(font)
+	love.graphics.setFont(fonts.hex)
 	love.graphics.translate(translationX, translationY)
 
 	for i, hexagon in pairs(self.hexagons) do
@@ -222,16 +222,8 @@ function map:draw()
 end
 
 
-function map:mousemoved(x, y, dx, dy)
-
-	if love.mouse.isDown(1) and x < love.graphics.getWidth() * game_settings.split_ratio then
-		if self.selectedCounty ~= nil then
-			self:resetHighlight()
-		end
-		translationX, translationY = translationX + dx, translationY + dy
-
-	end
-
+function map:mousemoved(x, y, dx, dy)	
+	translationX, translationY = translationX + dx, translationY + dy
 end
 
 function map:resetHighlight()
@@ -244,15 +236,22 @@ function map:resetHighlight()
 
 end
 
-function map:highlight()
+function map:cancel()
 
-	self:resetHighlight()
+	if self.selectedCounty then
+		self.selectedCounty:cancelFloatingSoldier()
+	end
+
+end
+
+function map:highlight()
 
 	local x, y = draw.pixelTocenter(love.mouse.getX(), love.mouse.getY())
 
 	local index = (x-1) * map_settings.n_x + y
 
 	if self.hexagons[index] ~= nil then
+		self:resetHighlight()
 		local selectedHexagon = self.hexagons[index]
 		for index, county in pairs(self.counties) do
 
@@ -260,9 +259,9 @@ function map:highlight()
 				county.isHighlighted = true
 				self.selectedCounty = county
 
-				if self.previousSelectedCounty == self.selectedCounty then
+				--[[if self.previousSelectedCounty == self.selectedCounty then
 					county:deploySoldier(x, y)
-				end
+				end--]]
 
 				return
 			end
