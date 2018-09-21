@@ -1,8 +1,6 @@
-local Object = require 'utils/classic'
+local point = Class{}
 
-local point = Object:extend()
-
-function point:new(x, y)
+function point:init(x, y)
 	self.x = x
 	self.y = y
 end

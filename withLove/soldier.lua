@@ -1,11 +1,13 @@
-local Object = require 'utils/classic'
 local draw = require 'utils/draw'
 local game_settings = require 'config/game_settings'
 
-local soldier = Object:extend()
+local soldier = Class{}
 
 
-function soldier:new(x, y)
+soldier.level1 = {}
+soldier.level1.cost = 5
+
+function soldier:init(x, y)
 
 	self.x = x
 	self.y = y
@@ -25,7 +27,7 @@ function soldier:draw()
 	love.graphics.push()
 	love.graphics.setColor(0,0,0,0.4)
 	love.graphics.circle('fill', c_x, c_y, s / 2)
-	love.graphics.push(pop)
+	love.graphics.pop()
 
 
 end

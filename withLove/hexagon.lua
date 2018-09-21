@@ -1,12 +1,11 @@
-local Object = require 'utils/classic'
 local game_settings = require 'config/game_settings'
 local draw = require 'utils/draw'
 
 
 
-local hex = Object:extend()
+local hex = Class{}
 
-function hex:new(x, y)
+function hex:init(x, y)
 
 	self.x = x
 	self.y = y

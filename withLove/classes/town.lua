@@ -1,11 +1,10 @@
-local Object = require 'utils/classic'
 local game_settings = require 'config/game_settings'
 local draw = require 'utils/draw'
 
-local town = Object:extend()
+local town = Class{}
 
 
-function town:new(hexagon)
+function town:init(hexagon)
 
 	self.x = hexagon.x
 	self.y = hexagon.y

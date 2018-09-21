@@ -1,13 +1,13 @@
-local Object = require 'utils/classic'
 local map_settings = require 'config/map_settings'
 local line = require 'classes/line'
 local point = require 'classes/point'
 local utils = require 'utils/utils'
 local town = require 'classes/town'
+local soldier = require 'soldier'
 
-local county = Object:extend()
+local county = Class{}
 
-function county:new(hexagons)
+function county:init(hexagons)
 	self.hexagons = hexagons
 	self.isHighligthed = false
 	self.shape = nil
@@ -111,7 +111,77 @@ function county:draw()
 	if self.town ~= nil then
 		self.town:draw()
 	end
+
+	for i, s in pairs(self.soldiers) do
+		s:draw()
+	end
+
+	love.graphics.push()
+	--love.graphics.setScissor(love.graphics.getWidth( )* game_settings.split_ratio, 0,love.graphics.getWidth( )* (1-game_settings.split_ratio), love.graphics.getHeight())	love.graphics.setScissor()
+	love.graphics.origin()
+	local sx, sy, sw, sh = love.graphics.getScissor() 
+	love.graphics.setScissor()
+	Suit:draw()
+	love.graphics.setScissor(sx, sy, sw, sh)
+	love.graphics.pop()
 	
+	
+
+end
+
+function county:update()
+
+	if self.isHighlighted then
+
+		local padding = 10
+		local split_ratio = game_settings.split_ratio
+		local y_start = padding
+
+		local x_start = math.floor(love.graphics.getWidth() * split_ratio) + padding
+		local menu_layout_width = love.graphics.getWidth() - x_start - padding
+
+		-- County Statistics
+
+
+
+	    Suit.layout:reset(x_start, y_start)
+	    local headerFont = love.graphics.newFont(18)
+		Suit.Label('Finance', {font=headerFont}, Suit.layout:row(menu_layout_width , 20))
+
+	    Suit.layout:reset(x_start, y_start + 20 + 2*padding)
+	    Suit.layout:padding(padding)
+	    
+	    Suit.Label('Revenue', {align='left'}, Suit.layout:down(math.floor(menu_layout_width*0.75), padding))
+	    Suit.Label('Wage', {align='left'}, Suit.layout:down())    
+	    Suit.Label('Tree', {align='left'}, Suit.layout:down())
+	    Suit.Label('Income', {align='left'}, Suit.layout:down())
+
+	    Suit.layout:reset(x_start + math.floor(menu_layout_width * 0.75), y_start + 20 + 2*padding)
+	    Suit.layout:padding(padding)
+	    Suit.Label('12', {align='right'}, Suit.layout:down(math.floor(menu_layout_width * 0.25), padding))
+	    Suit.Label('- 7', {align='right', color = {normal= {fg = {1,0,0}}}}, Suit.layout:down())
+	    Suit.Label('- 2', {align='right'}, Suit.layout:down())
+	    Suit.Label('3', {align='right'}, Suit.layout:down())
+
+	    Suit.layout:reset(x_start + padding, y_start + 20 + 4*padding + 8*padding)
+	    Suit.layout:padding(2*padding)
+	    Suit.Button("Add Soldier", {align='center'}, Suit.layout:down(math.floor(menu_layout_width / 2) - 2*padding, 2*padding))
+	    Suit.Button("Add Tower", Suit.layout:right())
+
+	end
+end
+
+function county:menu()
+
+
+end
+
+function county:deploySoldier(x, y)
+
+	if self.cash >= soldier.level1.cost then
+		table.insert(self.soldiers, soldier(x, y))
+		self.cash = self.cash - soldier.level1.cost
+	end
 
 end
 

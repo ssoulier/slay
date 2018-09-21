@@ -1,4 +1,3 @@
-local Object = require 'utils/classic'
 local map_settings = require 'config/map_settings'
 local game_settings = require 'config/game_settings'
 local hexagon = require 'hexagon'
@@ -7,12 +6,12 @@ local graph = require 'utils/graph'
 local county = require 'classes/county'
 local draw = require 'utils/draw'
 
-local map = Object:extend()
+local map = Class{}
 
 local left_button_pressed = false
 local ref_x, ref_y
 
-function map:new()
+function map:init()
 
 	self.hexagons = {}
 
@@ -29,6 +28,9 @@ function map:new()
 	end
 
 	self:extractCounties()
+
+	self.selectedCounty = nil
+	self.previousSelectedCounty = nil
 
 end
 
@@ -188,7 +190,20 @@ function map:extractLargestIsland(islands)
 	return result
 end
 
+function map:update()
+
+	for i, county in pairs(self.counties) do
+		county:update()
+	end
+
+end
+
 function map:draw()
+
+	love.graphics.push()
+	love.graphics.setScissor(0, 0,love.graphics.getWidth() * game_settings.split_ratio, love.graphics.getHeight())
+	love.graphics.setFont(font)
+	love.graphics.translate(translationX, translationY)
 
 	for i, hexagon in pairs(self.hexagons) do
 		hexagon:draw()
@@ -201,35 +216,37 @@ function map:draw()
 	for i, county in pairs(self.counties) do
 		county:draw()
 	end
+
+	love.graphics.setScissor()
+	love.graphics.pop()
 end
 
 
-function map:move()
+function map:mousemoved(x, y, dx, dy)
 
-	if love.mouse.isDown(1) then
-
-		if ref_x == nil or ref_y == nil then
-			ref_x, ref_y = love.mouse.getX(), love.mouse.getY()
+	if love.mouse.isDown(1) and x < love.graphics.getWidth() * game_settings.split_ratio then
+		if self.selectedCounty ~= nil then
+			self:resetHighlight()
 		end
+		translationX, translationY = translationX + dx, translationY + dy
 
-		local x_incr, y_incr = love.mouse.getX() - ref_x, love.mouse.getY() - ref_y
-		ref_x, ref_y = love.mouse.getX(), love.mouse.getY()
-
-		translationX, translationY = translationX + x_incr, translationY + y_incr
-
-   	else
-   		ref_x, ref_y = nil, nil
-   	end
+	end
 
 end
 
-
-function map:highlight()
-
+function map:resetHighlight()
+	self.previousSelectedCounty = self.selectedCounty
+	self.selectedCounty = nil
 	-- Unselect previous county
 	for index, county in pairs(self.counties) do
 		county.isHighlighted = false
 	end
+
+end
+
+function map:highlight()
+
+	self:resetHighlight()
 
 	local x, y = draw.pixelTocenter(love.mouse.getX(), love.mouse.getY())
 
@@ -241,6 +258,12 @@ function map:highlight()
 
 			if county:contain(selectedHexagon) then
 				county.isHighlighted = true
+				self.selectedCounty = county
+
+				if self.previousSelectedCounty == self.selectedCounty then
+					county:deploySoldier(x, y)
+				end
+
 				return
 			end
 		end

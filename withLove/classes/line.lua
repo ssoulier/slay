@@ -1,8 +1,6 @@
-local Object = require 'utils/classic'
+local line = Class{}
 
-local line = Object:extend()
-
-function line:new(p1, p2)
+function line:init(p1, p2)
 
 	self.p1 = p1
 	self.p2 = p2
