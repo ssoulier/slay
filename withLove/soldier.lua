@@ -7,10 +7,11 @@ local soldier = Class{}
 soldier.level1 = {}
 soldier.level1.cost = 5
 
-function soldier:init()
+function soldier:init(player_id)
 
 	self.x = nil
 	self.y = nil
+	self.player_id = player_id
 
 end
 

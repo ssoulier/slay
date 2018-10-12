@@ -5,6 +5,7 @@ local utils = require 'utils/utils'
 local graph = require 'utils/graph'
 local county = require 'classes/county'
 local draw = require 'utils/draw'
+local soldier = require 'soldier'
 
 local map = Class{}
 
@@ -42,8 +43,7 @@ function map:extractCounties()
 
 		if visited[index] == nil then
 
-			local m = math.modf(index / map_settings.n_x) + 1
-			local n = index  - (m - 1) * map_settings.n_x
+			local m, n = graph.createHexCoordinates(index)
 			local county_indices = {}		
 			local value = hexagon.color
 			table.insert(county_indices, {m, n})
@@ -57,7 +57,7 @@ function map:extractCounties()
 				county_hexagons[index] = self.hexagons[index]
 			end
 
-			table.insert(self.counties, county(county_hexagons))
+			table.insert(self.counties, county(county_hexagons, value))
 		end
 
 	end
@@ -157,9 +157,8 @@ function map:extractIslands(tiles)
 		if visited[index] == nil then
 
 			if v == 1 then
-				isle = {}
-				local m = math.modf(index / map_settings.n_x) + 1
-				local n = index  - (m - 1) * map_settings.n_x
+				local isle = {}
+				local m, n = graph.createHexCoordinates(index)
 				table.insert(isle, {m,n})
 				graph.dfs(tiles, visited, isle, m , n, 1, function(x) return x end)
 
@@ -244,6 +243,73 @@ function map:cancel()
 
 end
 
+function map:deploySoldier(mouseX, mouseY)
+
+	local x, y = draw.pixelTocenter(mouseX, mouseY)
+
+	local index = (x-1) * map_settings.n_x + y
+	if self.hexagons[index] ~= nil then
+		local selectedHexagon = self.hexagons[index]
+
+		if selectedHexagon.color ~= self.selectedCounty.floating_soldier.player_id then
+
+			if selectedHexagon:isFree() and self.selectedCounty:isNeighbour(selectedHexagon) then
+
+				-- Find the county that this hex belongs to
+				-- Remove the hex from this county
+				local attackedCounty, attackedCountyIndex
+				for county_index, county in pairs(self.counties) do
+					if county:contain(selectedHexagon) then
+						attackedCounty = county
+						attackedCountyIndex = county_index
+						county:remove(selectedHexagon)
+
+						if county:size() == 0 then
+							table.remove(self.counties, county_index)
+						end
+
+						break
+					end
+				end
+
+				-- change the player id of this county
+				-- add the soldier and remove the floating soldier
+				self.hexagons[index].color = self.selectedCounty.player_id
+				local s = soldier(self.selectedCounty.player_id)
+				s.x, s.y = x, y
+				self.selectedCounty:addSoldier(s)
+				self.selectedCounty.floating_soldier = nil
+
+				-- add this hex to the selected county
+				self.selectedCounty:add(selectedHexagon)
+
+				-- if some hex belongs to the same player merge all this county together and remove it to the county list
+				for county_index, county in pairs(self.counties) do
+					if county ~= self.selectedCounty and county.player_id == self.selectedCounty.player_id and county:isNeighbour(selectedHexagon) then
+						table.remove(self.counties, county_index)
+						self.selectedCounty:concatenate(county)
+					end
+				end
+
+				-- split if neccessary
+				local newCounties = attackedCounty:split()
+				if #newCounties == 2 then
+					table.remove(self.counties, attackedCountyIndex)
+					for _, county in pairs(newCounties) do
+						table.insert(self.counties, county)
+					end
+				end
+
+			end
+
+		else
+			if self.selectedCounty:contain(selectedHexagon) and selectedHexagon:isFree() then
+			end
+		end
+	end
+
+end
+
 function map:highlight()
 
 	local x, y = draw.pixelTocenter(love.mouse.getX(), love.mouse.getY())
@@ -259,9 +325,9 @@ function map:highlight()
 				county.isHighlighted = true
 				self.selectedCounty = county
 
-				--[[if self.previousSelectedCounty == self.selectedCounty then
-					county:deploySoldier(x, y)
-				end--]]
+				if self.previousSelectedCounty == self.selectedCounty then
+					county:addFloatingSoldier()
+				end
 
 				return
 			end
@@ -269,6 +335,15 @@ function map:highlight()
 	end
 end
 
+function map:hasFloatingSoldier()
+
+	if self.selectedCounty then
+		return self.selectedCounty.floating_soldier ~= nil
+	else
+		return false
+	end
+
+end
 
 return map
 

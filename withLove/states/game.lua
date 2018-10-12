@@ -1,7 +1,5 @@
 local game = {}
 
-local world
-
 function game:init()
 
 	local map = require 'map'
@@ -54,14 +52,14 @@ function game:mousepressed(x, y, button, istouch, presses)
 	if button == 2 then
 		world:cancel()
 	end
-end
-
-function game:mousereleased(x, y, button, istouch, presses)
-	
-	if button == 1 then
+	if button == 1 and world:hasFloatingSoldier() then
+		world:deploySoldier(x, y)
+	elseif button == 1 then
+		world:cancel()
 		world:highlight()
 	end
 end
+
 
 function game:wheelmoved(x, y)
 

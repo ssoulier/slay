@@ -2,10 +2,25 @@ local map_settings = require('config/map_settings')
 
 local graph = {}
 
+graph.createHexIndex = function(x, y)
+
+	return (x-1) * map_settings.n_x + y
+
+end
+
+graph.createHexCoordinates = function(index)
+
+	local x = math.modf(index / map_settings.n_x) + 1
+	local y = index  - (x - 1) * map_settings.n_x
+
+	return x, y
+
+end
+
 local testDFS = function(tiles, visited, isle, i, j, value, property)
 
 	if i >= 1 and i <= map_settings.n_x and j >= 1 and j <= map_settings.n_y then
-		local index = (i-1) * map_settings.n_x + j
+		local index = graph.createHexIndex(i, j)
 
 		if index > 0 and tiles[index] ~= nil then
 

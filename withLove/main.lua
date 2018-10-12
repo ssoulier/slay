@@ -6,8 +6,10 @@ game_settings = require 'config/game_settings'
 map_settings = require 'config/map_settings'
 draw = require 'utils/draw'
 fonts = require 'fonts'
+graph = require 'utils/graph'
 local menu = require 'states/menu'
 
+world = nil
 
 io.stdout:setvbuf("no")
 --require 'lovedebug'

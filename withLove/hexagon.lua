@@ -11,9 +11,74 @@ function hex:init(x, y)
 	self.y = y
 
 	self.color = math.random(2,#game_settings.colors)
+	self.soldier = nil
+	self.town = nil
 
 	--self:setColor()
 	
+end
+
+function hex:isNeighbour(hexagon)
+
+	local delta = self.y % 2
+
+	local y = 0
+	for x = -1, 1, 2 do
+		if self.x + x == hexagon.x and self.y == hexagon.y then
+			return true
+		end
+	end 
+
+	for x = -1, 0 do
+		for y = -1, 1, 2 do
+			if self.x + x + delta == hexagon.x and self.y + y == hexagon.y then
+				return true
+			end
+		end
+	end
+
+	return false
+
+end
+
+function hex:addSoldier(soldier)
+
+	self.soldier = soldier
+
+end
+
+function hex:addTown(town)
+	self.town = town
+end
+
+function hex:isFree()
+
+	local delta = self.y % 2
+	local y = 0
+	for x = -1, 1 do
+		local index = graph.createHexIndex(self.x + x, self.y)
+		local hex = world.hexagons[index]
+		if hex ~= nil then
+			if self.color == hex.color and (hex.soldier ~= nil or hex.town ~= nil) then
+				return false
+			end
+		end
+	end 
+
+	for x = -1, 0 do
+		for y = -1, 1, 2 do
+			local index = graph.createHexIndex(self.x + x + delta, self.y + y)
+			local hex = world.hexagons[index]
+			if hex ~= nil then
+				if self.color == hex.color and (hex.soldier ~= nil or hex.town ~= nil) then
+					return false
+				end
+			end
+		end
+	end
+
+	return true
+
 end
 
 function hex:setColor()

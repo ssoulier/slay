@@ -7,14 +7,16 @@ local soldier = require 'soldier'
 
 local county = Class{}
 
-function county:init(hexagons)
+function county:init(hexagons, player_id)
 	self.hexagons = hexagons
 	self.isHighligthed = false
 	self.shape = nil
 	
 	local size = self:size()
 	if size  >= 2 then
-		self.town = town(utils.randomchoice(self.hexagons))
+		local hex_town = utils.randomchoice(self.hexagons)
+		self.town = town(hex_town)
+		hex_town:addTown(self.town)
 		self.cash = size
 	else
 		self.town = nil
@@ -27,12 +29,76 @@ function county:init(hexagons)
 	self.graves = {}
 
 	self.floating_soldier = nil
+
+	self.player_id = player_id
+
+	
+end
+
+function county:addTown(town)
+
+	self.town = town
+	for _, hex in pairs(self.hexagons) do
+		if hex.x == town.x and hex.y == town.y then
+			hex:addTown(town)
+			break
+		end
+	end
+end
+
+
+function county:deleteTown()
+
+	if self.town then
+
+		for _, hex in pairs(self.hexagons) do
+
+			if hex.x == self.town.x and hex.y == self.town.y then
+
+				self.town = nil
+				hex.town = nil
+				break
+			end
+		end
+	end
+end
+
+function county:addSoldier(soldier)
+	table.insert(self.soldiers, soldier)
+end
+
+function county:concatenate(county)
+	for index, hexagon in pairs(county.hexagons) do
+		local index = (hexagon.x - 1) * map_settings.n_x + hexagon.y
+		self.hexagons[index] = hexagon
+	end
+end
+
+function county:add(hexagon)
+
+	local index = (hexagon.x - 1) * map_settings.n_x + hexagon.y
+	self.hexagons[index] = hexagon
+
+end
+
+function county:isNeighbour(hexagon)
+
+	local delta = hexagon.y % 2
+
+	for i, hex in pairs(self.hexagons) do
+
+		if hex:isNeighbour(hexagon) then
+			return true
+		end
+	end
+
+	return false
 	
 end
 
 function county:contain(hexagon)
 
-	for index, hex in pairs(self.hexagons) do
+	for _, hex in pairs(self.hexagons) do
 
 		if hex.x == hexagon.x and hex.y == hexagon.y then
 			return true
@@ -40,6 +106,56 @@ function county:contain(hexagon)
 
 	end
 	return false
+end
+
+function county:remove(hexagon)
+
+	for index, hex in pairs(self.hexagons) do
+		print(index)
+		if hex.x == hexagon.x and hex.y == hexagon.y then
+			self.hexagons[index] = nil
+		end
+	end
+
+end
+
+function county:split()
+
+	local counties = {}
+	local visited = {}
+	for index, hex in pairs(self.hexagons) do
+
+		if visited[index] == nil then
+	
+			local m, n = graph.createHexCoordinates(index)
+			local county_indices = {}		
+			local value = hex.color
+			table.insert(county_indices, {m, n})
+			visited[index] = 1
+
+			graph.dfs(self.hexagons, visited, county_indices, m, n, value, function(x) return x.color end)
+
+			local county_hexagons = {}
+			for i, v in pairs(county_indices) do
+				local index = (v[1] - 1) * map_settings.n_x + v[2]
+				county_hexagons[index] = self.hexagons[index]
+			end
+
+			table.insert(counties, county(county_hexagons))
+
+		end
+	end
+
+	local currentTown = self.town
+	for _, county in pairs(counties) do
+		if county:contain(currentTown) then
+			county:deleteTown()
+			county:addTown(currentTown)
+		end
+	end
+
+	return counties
+
 end
 
 function county:size()
@@ -174,7 +290,7 @@ function county:update()
 	    if Suit.Button('Add Soldier', Suit.layout:down(math.floor(menu_layout_width / 2)- padding, 2*padding)).hit then
 	    	if self.floating_soldier == nil then
 
-	    		self.floating_soldier = soldier()
+	    		self.floating_soldier = soldier(self.player_id)
 	    	end
 	    end	
 
@@ -186,8 +302,9 @@ function county:update()
 	end
 end
 
-function county:menu()
+function county:addFloatingSoldier()
 
+	self.floating_soldier = soldier(self.player_id)
 
 end
 
