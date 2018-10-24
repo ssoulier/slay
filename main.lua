@@ -59,8 +59,6 @@ function love.draw()
 
 	world:draw()
 
-	love.
-
 	love.graphics.pop()
 
 
