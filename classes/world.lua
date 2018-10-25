@@ -97,36 +97,74 @@ function world:tileClicked(x, y)
 	end
 end
 
+function world:findcounty(tile)
+
+	for index, county in pairs(self.counties) do
+		if county:contain(tile) then
+			return index, county
+		end
+	end
+
+end
+
+
 function world:attacked(tile_attacked)
 
 	-- Change the tile_attacked
 	tile_attacked:attacked(self.floating_soldier)
 
 	-- Find the county the tile_attacked belongs
-	local county_attacked = nil
-	for _, county in ipairs(self.counties) do
-		if county:contain(tile_attacked) then
-			county_attacked = county
-			break
+	local county_attacked_index, county_attacked = self:findcounty(tile_attacked)
+
+	-- Handle attacked county
+
+	county_attacked:remove(tile_attacked)
+	local counties = {}
+	local visited = {}
+	for index, tile in pairs(county_attacked.tiles) do
+
+		if not visited[index] then
+
+			local function goal(elt)
+				return elt.player_id == tile.player_id
+			end
+
+			local county_tiles = {}
+			Utils.dfs(county_attacked.tiles, tile.x, tile.y, county_tiles, visited, goal)
+
+			if Utils.tablesize(county_tiles) > 0 then
+				table.insert(counties, County(county_tiles))
+			end
+
 		end
 	end
 
-	-- Does this attack split the county_attacked
-	local count_neighbors = 0
-	for _ in Utils.neighbors(county_attacked.tiles, tile_attacked.x, tile_attacked.y) do
-		count_neighbors = count_neighbors + 1
+
+	table.remove(self.counties, county_attacked_index)
+	for _, county in ipairs(counties) do
+		table.insert(self.counties, county)
 	end
 
-	if count_neighbors == 2 then
+	-- Handle selected county
 
-		-- The county_attacked is splited
-	else
-		print('I am here')
-		county_attacked:remove(tile_attacked)
-		self.selected_county:add(tile_attacked)
+	self.selected_county:add(tile_attacked)
 
+	local added_county = {}
+	for tile in Utils.neighbors(tiles, tile_attacked.x, tile_attacked.y) do
+		if not self.selected_county:contain(tile) then
+			if tile.player_id == tile_attacked.player_id then
+				local neighbor_county_index, neighbor_county = self:findcounty(tile)
+				if not added_county[neighbor_county_index] then
+					self.selected_county:concatenate(neighbor_county)
+					added_county[neighbor_county_index] = neighbor_county_index
+				end
+			end
+		end
 	end
 
+	for county_index, _ in pairs(added_county) do
+		table.remove(self.counties, county_index)
+	end
 
 end
 

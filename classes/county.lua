@@ -11,16 +11,38 @@ function county:init(tiles)
 
 end
 
+function county:size()
+
+	return Utils.tablesize(self.tiles)
+
+end
+
 function county:attributetown()
 
-	local county_size = Utils.tablesize(self.tiles)
+	if self:size() >= 2 then
+		local containTown = false
+		for _, tile in pairs(self.tiles) do
+			if tile.town then
+				self.town = tile.town
+				containTown = true
+				break
+			end
+		end
 
-	if county_size > 1 then
-		local tile = Utils.randomchoice(self.tiles)
-		tile.town = Town(tile.x, tile.y)
-		self.town = tile.town
+		if not containTown then
+
+			local tile = Utils.randomchoice(self.tiles)
+			tile.town = Town(tile.x, tile.y)
+			self.town = tile.town
+		end
+	else
+		for _, tile in pairs(self.tiles) do
+			if tile.town then
+				tile.town = nil
+				self.town = nil
+			end
+		end
 	end
-
 end
 
 function county:canAttack(tile, soldier)
@@ -84,6 +106,15 @@ function county:draw()
 
 	if self.town then
 		self.town:draw()
+	end
+
+end
+
+function county:concatenate(other_county)
+
+	for index, tile in pairs(other_county.tiles) do
+		tile.town = nil
+		self.tiles[index] = tile
 	end
 
 end

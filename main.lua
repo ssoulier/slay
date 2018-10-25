@@ -9,6 +9,7 @@ Tile = require 'classes/tile'
 Town = require 'classes/town'
 Tower = require 'classes/tower'
 Soldier = require 'classes/soldier'
+inspect = require 'libs/inspect'
 
 
 world = nil
@@ -58,9 +59,7 @@ function love.draw()
 	end
 
 	world:draw()
-
 	love.graphics.pop()
-
 
 	printFPS()
 

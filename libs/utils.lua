@@ -130,7 +130,6 @@ local function dfs(elts, x, y, output, visited, goal)
 	for elt in neighbors(elts, x, y) do
 
 		if not visited[coordtoindex(elt.x, elt.y)] then
-
 			if goal(elt) then
 				visited[coordtoindex(elt.x, elt.y)] = true
 				output[coordtoindex(elt.x, elt.y)] = elt
